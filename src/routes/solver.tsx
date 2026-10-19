@@ -111,7 +111,7 @@ function Solver() {
 
   const doUndo = () => {
     if (!undo.length || won) return;
-    setBoard(undo[undo.length - 1]); setUndo((u) => u.slice(0, -1)); setMoves((n) => Math.max(0, n - 1)); setHint(null);
+    setBoard(undo[undo.length - 1]!); setUndo((u) => u.slice(0, -1)); setMoves((n) => Math.max(0, n - 1)); setHint(null);
   };
 
   const reset = () => {
@@ -151,7 +151,7 @@ function Solver() {
     const sol = await runSolver(board);
     if (!sol) return;
     if (!sol.moves.length) { setHint({ text: "Already solved!", tile: -1 }); return; }
-    const m = sol.moves[0];
+    const m = sol.moves[0]!;
     setHint({ text: `Hint: ${describeMove(board, m)}`, tile: applyMove(board, m)!.indexOf("0") });
   };
 
@@ -162,7 +162,7 @@ function Solver() {
     setInputError(null); loadPuzzle(manual);
   };
 
-  const shown = viewing && solution ? solution.states[step] : board;
+  const shown = viewing && solution ? solution.states[step]! : board;
   const total = solution?.moves.length ?? 0;
   const pct = viewing && total ? Math.round((step / total) * 100) : viewing ? 100 : null;
   const status = solving ? "Solving…" : viewing ? (step === total ? "Playback complete" : "Viewing solution") : won ? "Solved manually" : startAt ? "Playing" : board === GOAL ? "Solved" : "Ready";
@@ -191,14 +191,14 @@ function Solver() {
           </div>
         </div>
 
-        <Board state={shown} onTile={viewing ? undefined : clickTile} highlight={hint && hint.tile >= 0 ? hint.tile : null} solved={shown === GOAL} />
+        <Board state={shown} {...(viewing ? {} : { onTile: clickTile })} highlight={hint && hint.tile >= 0 ? hint.tile : null} solved={shown === GOAL} />
 
         <div className="min-h-[3rem] text-center text-sm" aria-live="polite">
           {won && <p className="text-lg font-semibold text-success">You solved it in {moves} moves · {formatTime(elapsed)}</p>}
           {viewing && solution && (
             step === total
               ? <p className="text-lg font-semibold text-success">Puzzle Solved Successfully! ({total} moves)</p>
-              : <p>Step {step} of {total}: {step === 0 ? "Initial State" : `Move ${MOVE_NAME[solution.moves[step - 1]]}`}</p>
+              : <p>Step {step} of {total}: {step === 0 ? "Initial State" : `Move ${MOVE_NAME[solution.moves[step - 1]!]}`}</p>
           )}
           {hint && <p className="text-accent">{hint.text}</p>}
           {solverMsg && <p className={cn(solverMsg.tone === "ok" && "text-success", solverMsg.tone === "warn" && "text-primary", solverMsg.tone === "err" && "text-destructive")}>{solverMsg.text}</p>}

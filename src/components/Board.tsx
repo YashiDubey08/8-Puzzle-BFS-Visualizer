@@ -2,10 +2,10 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   state: string;
-  onTile?: (index: number) => void;
-  highlight?: number | null;
+  onTile?: ((index: number) => void) | undefined;
+  highlight?: number | null | undefined;
   size?: "sm" | "md" | "lg";
-  solved?: boolean;
+  solved?: boolean | undefined;
   label?: string;
 };
 

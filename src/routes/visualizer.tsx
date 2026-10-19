@@ -87,7 +87,7 @@ function Visualizer() {
         <div className="panel p-5">
           <h2 className="font-semibold">Current state (front of queue)</h2>
           <div className="mt-4 flex justify-center">
-            <Board state={ev?.current ?? s.start} size="md" solved={ev?.isGoal} />
+            <Board state={ev?.current ?? s.start} size="md" solved={!!ev?.isGoal} />
           </div>
           <dl className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
             <div className="rounded-lg bg-secondary p-2"><dt className="text-[10px] uppercase text-muted-foreground">Visited</dt><dd className="font-mono font-bold">{s.visited.size}</dd></div>
