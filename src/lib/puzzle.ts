@@ -30,7 +30,7 @@ export function countInversions(s: string): number {
   let inv = 0;
   for (let i = 0; i < 9; i++)
     for (let j = i + 1; j < 9; j++)
-      if (s[i] !== "0" && s[j] !== "0" && s[i] > s[j]) inv++;
+      if (s[i] !== "0" && s[j] !== "0" && s[i]! > s[j]!) inv++;
   return inv;
 }
 
@@ -41,7 +41,7 @@ export function isSolvable(s: string): boolean {
 
 function swap(s: string, i: number, j: number): string {
   const a = s.split("");
-  [a[i], a[j]] = [a[j], a[i]];
+  const t = a[i]!; a[i] = a[j]!; a[j] = t;
   return a.join("");
 }
 
@@ -100,7 +100,7 @@ export function bfs(start: string, limit = 500000, onProgress?: (explored: numbe
   const queue: string[] = [start];
   let head = 0;
   while (head < queue.length) {
-    const cur = queue[head++];
+    const cur = queue[head++]!;
     if (cur === GOAL) {
       const moves: Move[] = [];
       const states: string[] = [];
@@ -132,7 +132,7 @@ export function randomPuzzle(steps = 40, rnd = Math.random): string {
   let last: Move | null = null;
   for (let i = 0; i < steps; i++) {
     const opts = neighbors(s).filter((n) => !last || n.move !== OPPOSITE[last]);
-    const pick = opts[Math.floor(rnd() * opts.length)];
+    const pick = opts[Math.floor(rnd() * opts.length)]!;
     s = pick.state;
     last = pick.move;
   }
@@ -152,7 +152,7 @@ export class BfsStepper {
   }
   step(): { current: string; depth: number; added: string[]; skipped: string[]; isGoal: boolean } | null {
     if (this.done || this.head >= this.queue.length) { this.done = true; return null; }
-    const { state, depth } = this.queue[this.head++];
+    const { state, depth } = this.queue[this.head++]!;
     if (state === GOAL) { this.done = true; this.found = state; return { current: state, depth, added: [], skipped: [], isGoal: true }; }
     const added: string[] = [], skipped: string[] = [];
     for (const n of neighbors(state)) {
