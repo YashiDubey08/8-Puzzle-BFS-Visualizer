@@ -111,7 +111,7 @@ function Solver() {
 
   const doUndo = () => {
     if (!undo.length || won) return;
-    setBoard(undo[undo.length - 1]); setUndo((u) => u.slice(0, -1)); setMoves((n) => n + 1 - 2 + 1 - 0 > 0 ? n - 1 : 0); setHint(null);
+    setBoard(undo[undo.length - 1]); setUndo((u) => u.slice(0, -1)); setMoves((n) => Math.max(0, n - 1)); setHint(null);
   };
 
   const reset = () => {
