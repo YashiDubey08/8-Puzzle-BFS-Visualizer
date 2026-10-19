@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Puzzle logic lives in src/lib/puzzle.ts as pure functions; the BFS solve runs in a Web Worker (src/lib/bfs.worker.ts) so the UI never blocks.
+- Guest history/leaderboard uses localStorage only; gameplay must never depend on a backend.
