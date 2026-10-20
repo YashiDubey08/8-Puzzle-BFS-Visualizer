@@ -143,7 +143,7 @@ function Solver() {
 
   const solveAuto = async () => {
     const sol = await runSolver(board);
-    if (sol) { setViewing(true); setStep(0); setPlaying(false); setHint(null); }
+    if (sol) { setViewing(true); setStep(0); setPlaying(true); setHint(null); }
   };
 
   const giveHint = async () => {
