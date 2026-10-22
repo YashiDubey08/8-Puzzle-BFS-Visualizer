@@ -10,6 +10,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Solve any 3×3 sliding-number puzzle with Breadth-First Search and watch the shortest solution play out." },
       { property: "og:title", content: "Number Puzzle Solver (3×3)" },
       { property: "og:description", content: "Explore the puzzle. Understand the algorithm. Find the shortest solution." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,

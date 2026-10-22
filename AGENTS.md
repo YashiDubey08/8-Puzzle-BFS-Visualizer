@@ -11,3 +11,5 @@
 
 - Puzzle logic lives in src/lib/puzzle.ts as pure functions; the BFS solve runs in a Web Worker (src/lib/bfs.worker.ts) so the UI never blocks.
 - Guest history/leaderboard uses localStorage only; gameplay must never depend on a backend.
+- Solver requests are owned by a synchronous lock and generation in the solver route; board/session changes invalidate ownership before cancellation to prevent stale results.
+- Solve is a playback preview; Exit returns to the manual board and preserves its undo stack, while Reset clears both gameplay and assistance state.

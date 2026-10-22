@@ -9,6 +9,8 @@ export const Route = createFileRoute("/project")({
       { name: "description", content: "Problem statement, BFS explanation, queue and visited map, solvability check and complexity for the 8-puzzle project." },
       { property: "og:title", content: "Project Details — Number Puzzle Solver" },
       { property: "og:description", content: "DSA project by Yashi Dubey: solving the 3×3 sliding puzzle with BFS." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Project,

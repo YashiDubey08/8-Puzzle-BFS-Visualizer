@@ -9,6 +9,8 @@ export const Route = createFileRoute("/stats")({
       { name: "description", content: "Your guest puzzle history, best times, best move counts and local leaderboard." },
       { property: "og:title", content: "Statistics & Leaderboard" },
       { property: "og:description", content: "Track puzzles played, solved, and your best performances." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Stats,

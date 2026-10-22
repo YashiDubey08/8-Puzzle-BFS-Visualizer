@@ -19,6 +19,8 @@ export const Route = createFileRoute("/solver")({
       { name: "description", content: "Play the 3×3 sliding puzzle, get hints, and watch the BFS shortest solution animate step by step." },
       { property: "og:title", content: "Puzzle Solver — Number Puzzle Solver" },
       { property: "og:description", content: "Interactive 3×3 puzzle with BFS auto-solve, hints, undo and playback." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Solver,
@@ -26,7 +28,7 @@ export const Route = createFileRoute("/solver")({
 
 type Solution = { from: string; moves: Move[]; states: string[]; explored: number; timeMs: number };
 
-function Solver() {
+export function Solver() {
   const [initial, setInitial] = useState("123405786");
   const [board, setBoard] = useState("123405786");
   const [undo, setUndo] = useState<string[]>([]);
@@ -42,6 +44,8 @@ function Solver() {
   const [solverMsg, setSolverMsg] = useState<{ tone: "ok" | "warn" | "err"; text: string } | null>(null);
   const [limit, setLimit] = useState(200000);
   const handle = useRef<SolveHandle | null>(null);
+  const generation = useRef(0);
+  const busy = useRef(false);
 
   const [viewing, setViewing] = useState(false);
   const [step, setStep] = useState(0);
@@ -66,13 +70,21 @@ function Solver() {
 
   // Playback
   useEffect(() => {
-    if (!playing || !solution) return;
+    if (!viewing || !playing || !solution) return;
     if (step >= solution.moves.length) { setPlaying(false); if (sound) winSound(); return; }
     const id = setTimeout(() => { setStep((s) => s + 1); if (sound) beep(440); }, speed);
     return () => clearTimeout(id);
-  }, [playing, step, solution, speed, sound]);
+  }, [viewing, playing, step, solution, speed, sound]);
 
-  useEffect(() => () => handle.current?.cancel(), []);
+  useEffect(() => () => { generation.current++; handle.current?.cancel(); }, []);
+
+  const clearAssistance = () => {
+    // Invalidate before cancellation: its promise may settle after a new game starts.
+    generation.current++;
+    handle.current?.cancel(); handle.current = null; busy.current = false;
+    setSolving(false); setProgress(0); setSolution(null); setSolverMsg(null);
+    setViewing(false); setStep(0); setPlaying(false); setHint(null);
+  };
 
   const recordAbandoned = useCallback(() => {
     if (moves > 0 && !won) saveRecord({ id: crypto.randomUUID(), name, start: initial, solved: false, moves, timeMs: elapsed, date: new Date().toISOString() });
@@ -80,9 +92,8 @@ function Solver() {
 
   const loadPuzzle = (s: string) => {
     recordAbandoned();
-    handle.current?.cancel(); setSolving(false);
+    clearAssistance(); setInputError(null);
     setInitial(s); setBoard(s); setUndo([]); setMoves(0); setStartAt(null); setEndAt(null); setWon(false);
-    setSolution(null); setViewing(false); setStep(0); setPlaying(false); setHint(null); setSolverMsg(null);
   };
 
   const start = () => {
@@ -94,7 +105,9 @@ function Solver() {
     if (viewing || won) return;
     const m = moveForTile(board, i);
     if (!m) { setHint({ text: "That tile isn't next to the empty space.", tile: -1 }); return; }
-    const next = applyMove(board, m)!;
+    const next = applyMove(board, m);
+    if (!next) return;
+    clearAssistance();
     setUndo((u) => [...u, board]);
     setBoard(next);
     setMoves((n) => n + 1);
@@ -110,24 +123,31 @@ function Solver() {
   };
 
   const doUndo = () => {
-    if (!undo.length || won) return;
-    setBoard(undo[undo.length - 1]!); setUndo((u) => u.slice(0, -1)); setMoves((n) => Math.max(0, n - 1)); setHint(null);
+    const previous = undo.at(-1);
+    if (!previous) return;
+    clearAssistance(); setWon(false); setEndAt(null); setNow(Date.now());
+    setBoard(previous); setUndo((u) => u.slice(0, -1)); setMoves((n) => Math.max(0, n - 1));
   };
 
   const reset = () => {
+    clearAssistance(); setInputError(null); setNow(0);
     setBoard(initial); setUndo([]); setMoves(0); setStartAt(null); setEndAt(null); setWon(false);
-    setViewing(false); setStep(0); setPlaying(false); setHint(null);
   };
 
-  const runSolver = (from: string): Promise<Solution | null> => {
-    if (solving) return Promise.resolve(null);
-    if (!isSolvable(from)) { setSolverMsg({ tone: "err", text: "This puzzle configuration cannot be solved." }); return Promise.resolve(null); }
-    if (solution && solution.from === from) return Promise.resolve(solution);
-    setSolving(true); setProgress(0); setSolverMsg(null);
-    const h = solveInWorker(from, limit, setProgress);
-    handle.current = h;
-    return h.promise.then((r) => {
-      setSolving(false); handle.current = null;
+  const runSolver = async (from: string): Promise<Solution | null> => {
+    if (busy.current || viewing) return null;
+    const err = validate(from);
+    if (err || !isSolvable(from)) { setSolverMsg({ tone: "err", text: err ?? "This puzzle configuration cannot be solved." }); return null; }
+    busy.current = true;
+    const request = ++generation.current;
+    setHint(null); setSolverMsg(null); setProgress(0);
+    try {
+      if (solution && solution.from === from) return solution;
+      setSolving(true);
+      const h = solveInWorker(from, limit, (n) => { if (generation.current === request) setProgress(n); });
+      handle.current = h;
+      const r = await h.promise;
+      if (generation.current !== request) return null;
       if (r === "cancelled") { setSolverMsg({ tone: "warn", text: "Search cancelled." }); return null; }
       if (r.status === "solved") {
         const sol = { from, moves: r.moves, states: r.states, explored: r.explored, timeMs: r.timeMs };
@@ -138,21 +158,34 @@ function Solver() {
       if (r.status === "limit") setSolverMsg({ tone: "warn", text: `Search stopped after exploring ${r.explored.toLocaleString()} states (limit reached) before finding the goal. The puzzle is solvable — raise the limit and try again.` });
       else setSolverMsg({ tone: "err", text: "Search exhausted every reachable state without finding the goal." });
       return null;
-    }).catch(() => { setSolving(false); setSolverMsg({ tone: "err", text: "The solver crashed unexpectedly." }); return null; });
+    } catch {
+      if (generation.current === request) setSolverMsg({ tone: "err", text: "The solver crashed unexpectedly." });
+      return null;
+    } finally {
+      if (generation.current === request) { busy.current = false; setSolving(false); handle.current = null; }
+    }
   };
 
   const solveAuto = async () => {
-    const sol = await runSolver(board);
-    if (sol) { setViewing(true); setStep(0); setPlaying(true); setHint(null); }
+    if (busy.current || viewing || won) return;
+    const pending = runSolver(board);
+    const request = generation.current;
+    const sol = await pending;
+    if (sol && generation.current === request) { setViewing(true); setStep(0); setPlaying(true); setHint(null); }
   };
 
   const giveHint = async () => {
-    if (won || viewing) return;
-    const sol = await runSolver(board);
-    if (!sol) return;
+    if (busy.current || won || viewing) return;
+    const pending = runSolver(board);
+    const request = generation.current;
+    const sol = await pending;
+    if (!sol || generation.current !== request) return;
     if (!sol.moves.length) { setHint({ text: "Already solved!", tile: -1 }); return; }
-    const m = sol.moves[0]!;
-    setHint({ text: `Hint: ${describeMove(board, m)}`, tile: applyMove(board, m)!.indexOf("0") });
+    const m = sol.moves[0];
+    if (!m) return;
+    const next = applyMove(board, m);
+    if (!next) return;
+    setHint({ text: `Hint: ${describeMove(board, m)}`, tile: next.indexOf("0") });
   };
 
   const loadManual = () => {
@@ -162,7 +195,7 @@ function Solver() {
     setInputError(null); loadPuzzle(manual);
   };
 
-  const shown = viewing && solution ? solution.states[step]! : board;
+  const shown = viewing && solution ? (solution.states[step] ?? board) : board;
   const total = solution?.moves.length ?? 0;
   const pct = viewing && total ? Math.round((step / total) * 100) : viewing ? 100 : null;
   const status = solving ? "Solving…" : viewing ? (step === total ? "Playback complete" : "Viewing solution") : won ? "Solved manually" : startAt ? "Playing" : board === GOAL ? "Solved" : "Ready";
@@ -198,7 +231,7 @@ function Solver() {
           {viewing && solution && (
             step === total
               ? <p className="text-lg font-semibold text-success">Puzzle Solved Successfully! ({total} moves)</p>
-              : <p>Step {step} of {total}: {step === 0 ? "Initial State" : `Move ${MOVE_NAME[solution.moves[step - 1]!]}`}</p>
+              : <p>Step {step} of {total}: {step === 0 ? "Initial State" : `Move ${MOVE_NAME[solution.moves[step - 1] ?? "U"]}`}</p>
           )}
           {hint && <p className="text-accent">{hint.text}</p>}
           {solverMsg && <p className={cn(solverMsg.tone === "ok" && "text-success", solverMsg.tone === "warn" && "text-primary", solverMsg.tone === "err" && "text-destructive")}>{solverMsg.text}</p>}
@@ -210,10 +243,10 @@ function Solver() {
             <Btn label="Start" onClick={start} tone="primary"><Flag size={16} />Start</Btn>
             <Btn label="Solve automatically" onClick={solveAuto} disabled={solving || won} tone="accent"><Wand2 size={16} />Solve</Btn>
             <Btn label="Hint" onClick={giveHint} disabled={solving || won || board === GOAL}><Lightbulb size={16} />Hint</Btn>
-            <Btn label="Undo" onClick={doUndo} disabled={!undo.length || won}><Undo2 size={16} />Undo</Btn>
-            <Btn label="Reset" onClick={reset} disabled={board === initial && !startAt}><RotateCcw size={16} />Reset</Btn>
+            <Btn label="Undo" onClick={doUndo} disabled={!undo.length}><Undo2 size={16} />Undo</Btn>
+            <Btn label="Reset" onClick={reset} disabled={board === initial && !startAt && !hint && !solution && !solving && !solverMsg && !inputError}><RotateCcw size={16} />Reset</Btn>
             <Btn label="Generate random puzzle" onClick={() => loadPuzzle(randomPuzzle())}><Shuffle size={16} />Random</Btn>
-            {solving && <Btn label="Cancel solver" onClick={() => handle.current?.cancel()}><X size={16} />Cancel</Btn>}
+            {solving && <Btn label="Cancel solver" onClick={() => { clearAssistance(); setSolverMsg({ tone: "warn", text: "Search cancelled." }); }}><X size={16} />Cancel</Btn>}
           </div>
         ) : solution && (
           <div className="w-full max-w-xl space-y-3">
@@ -228,6 +261,7 @@ function Solver() {
               <Btn label="Next step" onClick={() => { setPlaying(false); setStep((s) => Math.min(total, s + 1)); }} disabled={step === total}><SkipForward size={16} />Next</Btn>
               <Btn label="Restart animation" onClick={() => { setStep(0); setPlaying(false); }} disabled={step === 0 && !playing}><Rewind size={16} />Restart</Btn>
               <Btn label="Exit playback" onClick={() => { setViewing(false); setPlaying(false); }}><X size={16} />Exit</Btn>
+              <Btn label="Reset" onClick={reset}><RotateCcw size={16} />Reset</Btn>
             </div>
             <label className="flex items-center gap-3 text-xs text-muted-foreground">
               Speed
