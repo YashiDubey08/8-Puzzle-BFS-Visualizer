@@ -11,6 +11,8 @@ export const Route = createFileRoute("/visualizer")({
       { name: "description", content: "Step through a real Breadth-First Search on the 8-puzzle: see the FIFO queue, visited states and search depth." },
       { property: "og:title", content: "BFS Algorithm Visualizer" },
       { property: "og:description", content: "Real BFS execution on a 3×3 sliding puzzle, one step at a time." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Visualizer,
