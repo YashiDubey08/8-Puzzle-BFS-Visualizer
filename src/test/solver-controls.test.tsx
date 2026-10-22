@@ -8,7 +8,7 @@ import { Solver } from "@/routes/solver";
 
 type Pending = { start: string; resolve: (r: BfsResult | "cancelled") => void; cancel: ReturnType<typeof vi.fn> };
 let pending: Pending[];
-const button = (name: string) => screen.getByRole("button", { name, exact: true });
+const button = (name: string) => screen.getByRole("button", { name: (accessibleName) => accessibleName === name });
 const click = (name: string) => fireEvent.click(button(name));
 function load(start: string) {
   fireEvent.change(screen.getByRole("textbox", { name: "Puzzle digits" }), { target: { value: start } });
