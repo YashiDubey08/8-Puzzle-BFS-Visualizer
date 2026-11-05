@@ -1,35 +1,80 @@
-# Number Puzzle Solver (3×3)
+## Number Puzzle Solver – BFS Visualizer
 
-DSA project by **Yashi Dubey** (PRN 125B1B301). Solves the 3×3 sliding-number puzzle with **Breadth-First Search** using a **Queue** and a **Map**.
+An interactive 3×3 sliding puzzle application that uses **Breadth-First Search (BFS)** to find the shortest solution path and visualize how the algorithm explores different puzzle states.
 
-## Features
-- Interactive board (click tiles), manual input with validation, random solvable puzzles
-- BFS auto-solve in a Web Worker (non-blocking, cancellable, configurable state limit)
-- Inversion-count solvability check before searching
-- Step-by-step solution playback (play / pause / resume / prev / next / restart, speed)
-- Hints from the real BFS path, undo, reset, timestamp-based timer, optional sounds
-- Live BFS visualizer (real queue + visited set), local stats, history and guest leaderboard
+🔗Live Demo:
+https://puzzle-bfs-visualizer.lovable.app 
 
-## Architecture
-```
-src/lib/puzzle.ts        core logic: validate, inversions, moves, bfs(), randomPuzzle(), BfsStepper
-src/lib/bfs.worker.ts    runs bfs() off the main thread
-src/lib/solver-client.ts promise wrapper + cancellation
-src/lib/storage.ts       localStorage guest history and leaderboard ranking
-src/components/Board.tsx animated 3×3 board
-src/routes/              /, /solver, /visualizer, /stats, /project
-```
+## About the Project
 
-## Algorithm
-State = 9-char string, `0` = empty, goal `123456780`. BFS dequeues the oldest state (array + head pointer), finds `0`, computes `row = i/3`, `col = i%3`, tries U/D/L/R, and enqueues unseen neighbours while storing `state -> [parent, move]` in a Map. When the goal is dequeued the path is rebuilt by walking parents back to the start.
+The Number Puzzle Solver is based on the classic 8-puzzle problem. The objective is to arrange eight numbered tiles in the correct order by moving them into an empty space.
+The application allows users to solve puzzles manually or automatically while understanding the working of the BFS algorithm through a step-by-step visualizer.
 
-## Setup
-```
-bun install
-bun run dev
-bun run test   # runs src/test/puzzle.test.ts
-```
-No environment variables are required. A shared online leaderboard / GitHub sign-in is optional and not configured; the game works fully without it.
+## Key Features
 
-## Deploy
-Click **Publish** in Lovable. Connect GitHub from Lovable's GitHub integration to sync source code.
+- **Interactive Puzzle:** Play by clicking tiles or entering custom configurations.
+- **Random Puzzle Generation:** Generate solvable puzzle configurations.
+- **Automatic Solver:** Find the shortest solution using BFS.
+- **Hint & Undo:** Get the next correct move or reverse previous moves.
+- **Solution Playback:** Play, pause, restart, navigate and adjust playback speed.
+- **BFS Visualizer:** Observe the queue, visited states, generated states and skipped repetitions.
+- **Game Statistics:** Track games played, solved games, best time and move counts.
+- **Input Validation:** Handle invalid, repeated, incomplete and unsolvable configurations.
+
+## Algorithm & Data Structures
+
+**Algorithm:** Breadth-First Search (BFS)
+
+BFS explores puzzle configurations level by level using a queue. Each valid tile movement creates a new state. Previously visited states are skipped to avoid repeated exploration.
+
+Since every move has equal cost, BFS guarantees the shortest solution path when the search completes.
+
+## Data Structure 
+Queue: Stores states waiting to be explored.
+Map:Tracks visited states and helps reconstruct the solution.
+Set:Prevents repeated state exploration, if used. 
+Array:Represents the puzzle board.
+
+## Performance & Testing
+
+## Metric & Result
+Automated Tests: 10 Passed
+Hardest Puzzle Tested: `867254301`
+Shortest Solution: 31 Moves
+Observed Solving Time: ~0.3 Seconds
+
+The application also handles unsolvable configurations and search-limit conditions with appropriate messages.
+
+## Technologies Used
+
+Frontend: Add actual framework and language.
+Algorithm: Breadth-First Search.
+Data Structures: Queue, Map, Set and Arrays.
+Tools: Git, GitHub and Lovable.
+
+## Application Sections
+
+## Section & Purpose
+Home: Project introduction and playable mini puzzle.
+Puzzle Solver: Interactive puzzle and automatic solving.
+Visualizer: Step-by-step BFS execution. 
+Statistics: Game performance and history. 
+Project Details: Algorithm explanation and technical documentation. 
+
+## Future Improvements
+
+Shared online leaderboard.
+GitHub authentication.
+Cloud-based game history.
+A* algorithm implementation and comparison.
+Additional puzzle sizes and difficulty levels.
+
+## Author
+
+Yashi Dubey 
+
+Second-Year Computer Engineering Student  
+
+Pimpri Chinchwad College of Engineering (PCCOE)
+
+⭐ If you find this project interesting, feel free to explore the repository!
