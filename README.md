@@ -81,9 +81,13 @@ Project Details: Algorithm explanation and technical documentation.
 ## Future Improvements
 
 Shared online leaderboard.
+
 GitHub authentication.
+
 Cloud-based game history.
+
 A* algorithm implementation and comparison.
+
 Additional puzzle sizes and difficulty levels.
 
 ## Author
