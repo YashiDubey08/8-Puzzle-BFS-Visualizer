@@ -13,12 +13,19 @@ The application allows users to solve puzzles manually or automatically while un
 ## Key Features
 
 - **Interactive Puzzle:** Play by clicking tiles or entering custom configurations.
+  
 - **Random Puzzle Generation:** Generate solvable puzzle configurations.
+  
 - **Automatic Solver:** Find the shortest solution using BFS.
+
 - **Hint & Undo:** Get the next correct move or reverse previous moves.
+  
 - **Solution Playback:** Play, pause, restart, navigate and adjust playback speed.
+  
 - **BFS Visualizer:** Observe the queue, visited states, generated states and skipped repetitions.
+  
 - **Game Statistics:** Track games played, solved games, best time and move counts.
+  
 - **Input Validation:** Handle invalid, repeated, incomplete and unsolvable configurations.
 
 ## Algorithm & Data Structures
@@ -31,16 +38,22 @@ Since every move has equal cost, BFS guarantees the shortest solution path when 
 
 ## Data Structure 
 Queue: Stores states waiting to be explored.
+
 Map:Tracks visited states and helps reconstruct the solution.
+
 Set:Prevents repeated state exploration, if used. 
+
 Array:Represents the puzzle board.
 
 ## Performance & Testing
 
 ## Metric & Result
 Automated Tests: 10 Passed
+
 Hardest Puzzle Tested: `867254301`
+
 Shortest Solution: 31 Moves
+
 Observed Solving Time: ~0.3 Seconds
 
 The application also handles unsolvable configurations and search-limit conditions with appropriate messages.
@@ -48,8 +61,11 @@ The application also handles unsolvable configurations and search-limit conditio
 ## Technologies Used
 
 Frontend: Add actual framework and language.
+
 Algorithm: Breadth-First Search.
+
 Data Structures: Queue, Map, Set and Arrays.
+
 Tools: Git, GitHub and Lovable.
 
 ## Application Sections
