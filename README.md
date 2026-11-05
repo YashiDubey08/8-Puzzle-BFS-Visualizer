@@ -1,3 +1,4 @@
+![Project Banner](banner.png)
 ## Number Puzzle Solver – BFS Visualizer
 
 An interactive 3×3 sliding puzzle application that uses **Breadth-First Search (BFS)** to find the shortest solution path and visualize how the algorithm explores different puzzle states.
