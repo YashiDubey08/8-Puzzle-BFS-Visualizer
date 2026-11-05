@@ -69,9 +69,13 @@ Tools: Git, GitHub and Lovable.
 
 ## Section & Purpose
 Home: Project introduction and playable mini puzzle.
+
 Puzzle Solver: Interactive puzzle and automatic solving.
+
 Visualizer: Step-by-step BFS execution. 
+
 Statistics: Game performance and history. 
+
 Project Details: Algorithm explanation and technical documentation. 
 
 ## Future Improvements
