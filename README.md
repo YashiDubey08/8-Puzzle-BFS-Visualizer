@@ -53,6 +53,19 @@ Data Structures: Queue, Map, Set and Arrays.
 Tools: Git, GitHub and Lovable.
 
 ## Application Sections
+## 📸 Screenshots
+
+### Home Page
+![Home Page](screenshots/home.png)
+
+### Puzzle Solver
+![Puzzle Solver](screenshots/puzzle-solver.png)
+
+### BFS Visualizer
+![BFS Visualizer](screenshots/bfs-visualizer.png)
+
+### Statistics
+![Statistics](screenshots/statistics.png)
 
 ## Section & Purpose
 Home: Project introduction and playable mini puzzle.
